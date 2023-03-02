@@ -451,7 +451,7 @@ public class ConfigParser {
 		}
 		int fuelIntervall;
 		if (config.contains("fuel_consumption_intervall")) {
-			fuelIntervall = parseTimeAsTicks(config.getString("fuel_consumption_intervall")) / 50;
+			fuelIntervall = parseTimeAsTicks(config.getString("fuel_consumption_intervall")); // / 50; divides by 50 twice??
 		} else {
 			fuelIntervall = defaultFuelConsumptionTime;
 		}
@@ -823,20 +823,20 @@ public class ConfigParser {
 			}
 			result = new PrintingPlateRecipe(identifier, name, productionTime, input, printingPlateOutput);
 			break;
-			case "PRINTINGPLATEJSON":
-				ConfigurationSection printingPlateJsonOutputSection = config.getConfigurationSection("output");
-				ItemMap printingPlateJsonOutput;
-				if (printingPlateJsonOutputSection == null) {
-					if (!(parentRecipe instanceof PrintingPlateJsonRecipe)) {
-						printingPlateJsonOutput = new ItemMap();
-					} else {
-						printingPlateJsonOutput = ((PrintingPlateJsonRecipe) parentRecipe).getOutput();
-					}
+		case "PRINTINGPLATEJSON":
+			ConfigurationSection printingPlateJsonOutputSection = config.getConfigurationSection("output");
+			ItemMap printingPlateJsonOutput;
+			if (printingPlateJsonOutputSection == null) {
+				if (!(parentRecipe instanceof PrintingPlateJsonRecipe)) {
+					printingPlateJsonOutput = new ItemMap();
 				} else {
-					printingPlateJsonOutput = ConfigHelper.parseItemMap(printingPlateJsonOutputSection);
+					printingPlateJsonOutput = ((PrintingPlateJsonRecipe) parentRecipe).getOutput();
 				}
-				result = new PrintingPlateJsonRecipe(identifier, name, productionTime, input, printingPlateJsonOutput);
-				break;
+			} else {
+				printingPlateJsonOutput = ConfigHelper.parseItemMap(printingPlateJsonOutputSection);
+			}
+			result = new PrintingPlateJsonRecipe(identifier, name, productionTime, input, printingPlateJsonOutput);
+			break;
 		case "PRINTBOOK":
 			ItemMap printBookPlate = ConfigHelper.parseItemMap(config.getConfigurationSection("printingplate"));
 			int printBookOutputAmount = config.getInt("outputamount", 1);
@@ -893,7 +893,7 @@ public class ConfigParser {
 		}
 		if (result != null) {
 			((InputRecipe) result)
-					.setFuelConsumptionIntervall(parseTimeAsTicks(config.getString("fuel_consumption_intervall", "0")));
+					.setFuelConsumptionIntervall(parseTimeAsTicks(config.getString("fuel_consumption_intervall", defaultFuelConsumptionTime+"t")));
 			plugin.info("Parsed recipe " + name);
 		}
 		return result;
