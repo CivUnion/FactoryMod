@@ -124,7 +124,7 @@ public class ConfigParser {
 		} else {
 			plugin.warning("No default_fuel specified. Should be an ItemMap.");
 		}
-		defaultFuelConsumptionTime = parseTimeAsTicks(config.getString("default_fuel_consumption_intervall", "1s"));
+		defaultFuelConsumptionTime = parseTimeAsTicks(config.getString("default_fuel_consumption_intervall", "20"));
 		defaultReturnRate = config.getDouble("default_return_rate", 0.0);
 		int redstonePowerOn = config.getInt("redstone_power_on", 7);
 		int redstoneRecipeChange = config.getInt("redstone_recipe_change", 2);
@@ -451,7 +451,7 @@ public class ConfigParser {
 		}
 		int fuelIntervall;
 		if (config.contains("fuel_consumption_intervall")) {
-			fuelIntervall = parseTimeAsTicks(config.getString("fuel_consumption_intervall")); // / 50; why divide by 50 again? parseTimeAsTicks already divides by 50
+			fuelIntervall = parseTimeAsTicks(config.getString("fuel_consumption_intervall")) / 50;
 		} else {
 			fuelIntervall = defaultFuelConsumptionTime;
 		}
@@ -566,7 +566,6 @@ public class ConfigParser {
 			if (modi == null && parentRecipe instanceof ProductionRecipe) {
 				modi = ((ProductionRecipe) parentRecipe).getModifier().clone();
 			}
-
 			result = new ProductionRecipe(identifier, name, productionTime, input, output, recipeRepresentation, modi);
 			break;
 		case "COMPACT":
@@ -824,20 +823,20 @@ public class ConfigParser {
 			}
 			result = new PrintingPlateRecipe(identifier, name, productionTime, input, printingPlateOutput);
 			break;
-		case "PRINTINGPLATEJSON":
-			ConfigurationSection printingPlateJsonOutputSection = config.getConfigurationSection("output");
-			ItemMap printingPlateJsonOutput;
-			if (printingPlateJsonOutputSection == null) {
-				if (!(parentRecipe instanceof PrintingPlateJsonRecipe)) {
-					printingPlateJsonOutput = new ItemMap();
+			case "PRINTINGPLATEJSON":
+				ConfigurationSection printingPlateJsonOutputSection = config.getConfigurationSection("output");
+				ItemMap printingPlateJsonOutput;
+				if (printingPlateJsonOutputSection == null) {
+					if (!(parentRecipe instanceof PrintingPlateJsonRecipe)) {
+						printingPlateJsonOutput = new ItemMap();
+					} else {
+						printingPlateJsonOutput = ((PrintingPlateJsonRecipe) parentRecipe).getOutput();
+					}
 				} else {
-					printingPlateJsonOutput = ((PrintingPlateJsonRecipe) parentRecipe).getOutput();
+					printingPlateJsonOutput = ConfigHelper.parseItemMap(printingPlateJsonOutputSection);
 				}
-			} else {
-				printingPlateJsonOutput = ConfigHelper.parseItemMap(printingPlateJsonOutputSection);
-			}
-			result = new PrintingPlateJsonRecipe(identifier, name, productionTime, input, printingPlateJsonOutput);
-			break;
+				result = new PrintingPlateJsonRecipe(identifier, name, productionTime, input, printingPlateJsonOutput);
+				break;
 		case "PRINTBOOK":
 			ItemMap printBookPlate = ConfigHelper.parseItemMap(config.getConfigurationSection("printingplate"));
 			int printBookOutputAmount = config.getInt("outputamount", 1);
@@ -894,7 +893,7 @@ public class ConfigParser {
 		}
 		if (result != null) {
 			((InputRecipe) result)
-					.setFuelConsumptionIntervall(parseTimeAsTicks(config.getString("fuel_consumption_intervall", defaultFuelConsumptionTime+"t")));
+					.setFuelConsumptionIntervall(parseTimeAsTicks(config.getString("fuel_consumption_intervall", "0")));
 			plugin.info("Parsed recipe " + name);
 		}
 		return result;
